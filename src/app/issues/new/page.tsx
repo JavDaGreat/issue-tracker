@@ -9,11 +9,14 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createIssueSchema } from "@/app/validationSchema";
 import z from "zod";
+import Loader from "@/app/Loader";
+
 type IssueForm = z.infer<typeof createIssueSchema>;
 
 export default function NewIssuePage() {
   const router = useRouter();
   const [error, setError] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const {
     register,
@@ -35,9 +38,12 @@ export default function NewIssuePage() {
         className="  space-y-3 "
         onSubmit={handleSubmit(async (data) => {
           try {
+            setIsSubmitting(true);
             await axios.post("/api/issues", data);
             router.push("/issues");
           } catch (error) {
+            setIsSubmitting(false);
+
             setError("An unexpected error occurd");
           }
         })}>
@@ -56,7 +62,9 @@ export default function NewIssuePage() {
           </Text>
         )}
 
-        <Button>Submit new Issue</Button>
+        <Button disabled={isSubmitting}>
+          Submit new Issue {isSubmitting && <Loader />}
+        </Button>
       </form>
     </div>
   );
